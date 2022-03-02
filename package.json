@@ -12,7 +12,17 @@
   },
   "dependencies": {
     "@nuxt/http": "latest",
+    "@nuxtjs/axios": "^5.13.6",
+    "@nuxtjs/style-resources": "^1.2.1",
+    "babel-plugin-component": "^1.1.1",
+    "cookieparser": "^0.1.0",
+    "element-ui": "^2.15.6",
     "express": "latest",
+    "express-jwt": "^6.1.1",
+    "express-session": "^1.17.2",
+    "js-cookie": "^3.0.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^4.4.0",
     "nuxt": "latest"
   },
   "devDependencies": {
@@ -20,6 +30,8 @@
     "@nuxtjs/eslint-module": "^3.0.2",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.20.0",
-    "eslint-plugin-nuxt": "^2.0.0"
+    "eslint-plugin-nuxt": "^2.0.0",
+    "node-sass": "^6.0.0",
+    "sass-loader": "10"
   }
 }
