@@ -51,15 +51,14 @@ export default {
   },
   methods: {
     async login() {
-      const { password, name } = await this.$http.$post(
+      const { data, token } = await this.$http.$post(
         "/api/auth/login",
         this.user
       );
-      console.log("登录反馈", { password, name });
-      // this.$store.commit("setAuth", name); // mutating to store for client rendering
-      // Cookie.set("auth", auth); // saving token in cookie for server rendering
-      // Cookie.set("token", token); // saving token in cookie for server rendering
-      // this.$router.push("/");
+      this.$store.commit("setAuth", data.name); // mutating to store for client rendering
+      Cookie.set("auth", data.name); // saving token in cookie for server rendering
+      Cookie.set("token", token); // saving token in cookie for server rendering
+      this.$router.push("/");
     },
   },
 };

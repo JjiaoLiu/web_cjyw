@@ -11,12 +11,13 @@ export const mutations = {
   },
 };
 export const actions = {
-  nuxtServerInit({ commit }, { req }) {
+  nuxtServerInit({ commit }, { req, $http }) {
     let auth = null;
     if (req.headers.cookie) {
       const parsed = cookieparser.parse(req.headers.cookie);
       try {
-        auth = JSON.parse(parsed.auth);
+        auth = parsed.auth;
+        $http.setToken(parsed.token);
       } catch (err) {
         // No valid cookie found
       }

@@ -1,22 +1,25 @@
 const { Router } = require("express");
-import { validate } from "schema-utils";
-import loginUser from "./../model/loginUser.json";
 import * as status from "./../statusCode";
+// JWT
+const jwt = require("jsonwebtoken");
+const secretKey = "web_cjyw";
 const router = Router();
 router.post("/auth/login", function (req, res, next) {
-  console.log(req.body);
-  // const configuration = { name: "Loader Name/Plugin Name/Name" };
-  // var a = validate(loginUser, req.body, configuration);
   var dbo = global.mongodb.db("g1");
   dbo
     .collection("loginUser")
     .findOne({ name: req.body.name })
     .then(function (data) {
-      console.log("findOne", data);
       if (data) {
+        let token =
+          "Bearer " +
+          jwt.sign({ username: data.name }, secretKey, {
+            expiresIn: "1h",
+          });
         res.json({
           code: status.success,
           data: data,
+          token: token,
           message: "success",
         });
       } else {

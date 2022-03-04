@@ -2,35 +2,32 @@
   <section class="container">
     <div>
       <Logo />
-      <h1 class="title">
-        USERS
-      </h1>
-      <ul class="users">
-        <li v-for="(user, index) in users" :key="index" class="user">
-          <nuxt-link :to="{ name: 'users-id', params: { id: index }}">
-            {{ user.name }}
+      <h1 class="title">news</h1>
+      <ul class="news">
+        <li v-for="(news, index) in news" :key="index" class="news">
+          <nuxt-link :to="{ name: 'news-id', params: { id: index } }">
+            {{ news.name }}
           </nuxt-link>
         </li>
       </ul>
-      <nuxt-link class="button" to="/">
-        Homepage
-      </nuxt-link>
+      <nuxt-link class="button" to="/"> Homepage </nuxt-link>
     </div>
   </section>
 </template>
 
 <script>
 export default {
-  async asyncData ({ $http }) {
-    const data = await $http.$get('/api/users')
-    return { users: data }
+  async asyncData({ $http }) {
+    const data = await $http.$get("/api/news/list");
+    console.log(data);
+    return { news: data };
   },
-  head () {
+  head() {
     return {
-      title: 'Users'
-    }
-  }
-}
+      title: "News",
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -42,22 +39,18 @@ export default {
   align-items: center;
   text-align: center;
 }
-.title
-{
+.title {
   margin: 30px 0;
 }
-.users
-{
+.news {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.user
-{
+.news {
   margin: 10px 0;
 }
-.button
-{
+.button {
   display: inline-block;
   margin-top: 50px;
 }
