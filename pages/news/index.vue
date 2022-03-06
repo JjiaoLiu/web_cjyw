@@ -1,12 +1,11 @@
 <template>
   <section class="container">
     <div>
-      <Logo />
       <h1 class="title">news</h1>
       <ul class="news">
-        <li v-for="(news, index) in news" :key="index" class="news">
+        <li v-for="(n, index) in news" :key="index" class="news">
           <nuxt-link :to="{ name: 'news-id', params: { id: index } }">
-            {{ news.name }}
+            {{ n.title }}
           </nuxt-link>
         </li>
       </ul>
@@ -18,8 +17,7 @@
 <script>
 export default {
   async asyncData({ $http }) {
-    const data = await $http.$get("/api/news/list");
-    console.log(data);
+    const { data } = await $http.$get("/api/news/list");
     return { news: data };
   },
   head() {

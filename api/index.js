@@ -22,9 +22,9 @@ app.use(
 );
 app.use((err, _req, res, _next) => {
   console.log("error----------------------------");
-  console.log(err);
+  console.log(err.name);
   if (err.name == "UnauthorizedError") {
-    return res.send({ status: 401, message: "Invalid Token" });
+    return res.send({ statusCode: 401, message: "Invalid Token" });
   }
   res.send({ status: 500, message: "Unknown Error" });
 });

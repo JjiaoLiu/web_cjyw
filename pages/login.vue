@@ -13,13 +13,13 @@
           >
             <el-form-item label="">
               <el-input
-                v-model="user.name"
+                v-model.trim="user.name"
                 prefix-icon="el-icon-user"
               ></el-input>
             </el-form-item>
             <el-form-item label="">
               <el-input
-                v-model="user.password"
+                v-model.trim="user.password"
                 prefix-icon="el-icon-lock"
               ></el-input>
             </el-form-item>
@@ -38,6 +38,7 @@
 
 <script>
 const Cookie = process.client ? require("js-cookie") : undefined;
+const cookieparser = require("cookieparser");
 
 export default {
   middleware: "notAuthenticated",
@@ -55,8 +56,8 @@ export default {
         "/api/auth/login",
         this.user
       );
-      this.$store.commit("setAuth", data.name); // mutating to store for client rendering
-      Cookie.set("auth", data.name); // saving token in cookie for server rendering
+      this.$store.commit("setAuth", token); // mutating to store for client rendering
+      Cookie.set("username", data.name); // saving token in cookie for server rendering
       Cookie.set("token", token); // saving token in cookie for server rendering
       this.$router.push("/");
     },
