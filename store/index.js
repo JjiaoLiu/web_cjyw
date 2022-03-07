@@ -17,7 +17,7 @@ export const actions = {
       const parsed = cookieparser.parse(req.headers.cookie);
       try {
         auth = parsed.token;
-        $http.setToken(parsed.token);
+        $http.setHeader("Authorization", parsed.token);
       } catch (err) {
         // No valid cookie found
       }

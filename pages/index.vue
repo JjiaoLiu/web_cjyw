@@ -21,7 +21,7 @@ export default {
   middleware: "authenticated",
   methods: {
     logout() {
-      Cookie.remove("auth");
+      Cookie.remove("token");
       this.$store.commit("setAuth", null);
     },
   },
