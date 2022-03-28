@@ -38,7 +38,6 @@
 
 <script>
 const Cookie = process.client ? require("js-cookie") : undefined;
-const cookieparser = require("cookieparser");
 
 export default {
   middleware: "notAuthenticated",

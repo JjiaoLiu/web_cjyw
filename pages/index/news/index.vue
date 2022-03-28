@@ -16,6 +16,7 @@
 
 <script>
 export default {
+  name: "News",
   async asyncData({ $http }) {
     const { data } = await $http.$get("/api/news/list");
     return { news: data };

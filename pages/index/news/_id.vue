@@ -1,7 +1,6 @@
 <template>
   <section class="container">
     <div>
-      <Logo />
       <h1 class="title">User</h1>
       <h2 class="info">
         {{ user.name }}

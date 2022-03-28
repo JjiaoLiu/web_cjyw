@@ -9,6 +9,19 @@ connectMongoClient();
 const express = require("express");
 // Create express instance
 const app = express();
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: function (_req, _file, cb) {
+    cb(null, "/Users/g1/workSpace/web_cjyw/uploads"); //fullpath
+  },
+  filename: function (_req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
+
+app.use(upload.single("file"));
 app.use(express.urlencoded({ extended: false }));
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
@@ -20,24 +33,43 @@ app.use(
     path: ["/api/auth/login"],
   })
 );
-app.use((err, _req, res, _next) => {
-  console.log("error----------------------------");
-  console.log(err.name);
-  if (err.name == "UnauthorizedError") {
-    return res.send({ statusCode: 401, message: "Invalid Token" });
+app.use("*", function (req, res, next) {
+  if (req.method.toLowerCase() == "options") {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Accept, Accept-Language, Content-Language, Content-Type, Authorization"
+    );
+    res.header(
+      "Access-Control-Allow-Methods",
+      "PUT,POST,GET,DELETE,OPTIONS,HEAD"
+    );
+    res.sendStatus(200);
+  } else {
+    next();
   }
-  res.send({ status: 500, message: "Unknown Error" });
 });
+
 // Require API routes
 const users = require("./routes/users");
 const auth = require("./routes/auth");
 const news = require("./routes/news");
+const uploads = require("./routes/uploads");
 
 // Import API Routes
 app.use(users);
 app.use(auth);
 app.use(news);
+app.use(uploads);
 
+app.use((err, _req, res, _next) => {
+  res.header("Access-Control-Allow-Origin", _req.headers.origin);
+  if (err.name == "UnauthorizedError") {
+    console.log(err.name);
+    return res.status(401).json({ code: "000", data: err.name });
+  }
+  return res.status(500).json({ code: "000", data: err.name });
+});
 // Export express app
 module.exports = app;
 

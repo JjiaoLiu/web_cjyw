@@ -1,5 +1,4 @@
 const { Router } = require("express");
-
 import * as status from "./../statusCode";
 const router = Router();
 router.post("/loginUser", function (req, res, next) {

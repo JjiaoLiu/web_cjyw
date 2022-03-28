@@ -5,12 +5,14 @@ export default function ({ $http, redirect, store }) {
   $http.onRequest((_config) => {});
   $http.onResponse(async (_request, _options, response) => {
     let __response = await response.json();
+    console.log("__response", __response);
     if (__response.code == "001") {
       if (__response.token) {
         $http.setHeader("Authorization", __response.token);
       }
       return __response;
     } else {
+      console.log("__response");
       return Promise.reject(__response);
     }
   });
@@ -21,8 +23,10 @@ export default function ({ $http, redirect, store }) {
     }
   });
   $http.onError((error) => {
+    console.log("httpError");
+    console.log("httpError", error);
     Message({ type: "error", message: error.message });
-    if (error.statusCode === 401) {
+    if (error.statusCode == 401) {
       store.commit("setAuth", null);
       redirect("/login");
     }
