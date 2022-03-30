@@ -20,6 +20,7 @@ export default function ({ $http, redirect, store }) {
     Message({ type: "error", message: error.message });
     if (error.code == 401) {
       store.commit("setAuth", null);
+      $http.setToken(null);
       Cookie.remove("token");
       redirect("/login");
     }
