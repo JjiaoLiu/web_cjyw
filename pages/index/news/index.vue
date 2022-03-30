@@ -2,10 +2,11 @@
   <section class="container">
     <el-form :model="form" ref="form">
       <el-form-item>
-        <el-input v-model.trim="form.key" placeholder="keywords"></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">立即创建</el-button>
+        <el-input
+          clearable
+          v-model.trim="form.key"
+          placeholder="keywords"
+        ></el-input>
       </el-form-item>
     </el-form>
 
@@ -73,11 +74,16 @@ export default {
       title: "News",
     };
   },
-  mounted() {
-    this.newsList();
+  watch: {
+    form: {
+      deep: true,
+      immediate: true,
+      handler(_n, _o) {
+        this.newsList();
+      },
+    },
   },
   methods: {
-    onSubmit() {},
     handleEditRow(index, _row) {
       this.$set(this.news[index], "contenteditable", true);
     },
