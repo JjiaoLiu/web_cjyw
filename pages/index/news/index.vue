@@ -1,22 +1,65 @@
 <template>
   <section class="container">
-    <div>
-      <h1 class="title">news</h1>
-      <ul class="news">
-        <li v-for="(n, index) in news" :key="index" class="news">
-          <nuxt-link :to="{ name: 'news-id', params: { id: index } }">
-            {{ n.title }}
-          </nuxt-link>
-        </li>
-      </ul>
-      <nuxt-link class="button" to="/"> Homepage </nuxt-link>
-    </div>
+    <el-table :data="news" border stripe>
+      <el-table-column v-for="col in columns" :key="col.id" :label="col.label">
+        <template slot-scope="scope">
+          <!-- @input="(e) => handleRowChange(scope.row, col.id, e)" -->
+          <span
+            :id="scope.$index + '_' + scope.row.id"
+            :class="
+              'contenteditable-input' +
+              ' ' +
+              (scope.row.contenteditable && 'contenteditable')
+            "
+            :contenteditable="scope.row.contenteditable"
+            v-html="scope.row[col.id]"
+            @blur="(e) => newsPut(scope.row, col.id, e)"
+          ></span>
+        </template>
+      </el-table-column>
+      <el-table-column align="right">
+        <template slot="header">
+          操作
+          <el-button
+            type="primary"
+            @click="handleAddRow"
+            :disabled="ifRowDisabled"
+            size="mini"
+            circle
+            icon="el-icon-plus"
+          ></el-button>
+        </template>
+        <template slot-scope="scope">
+          <el-button
+            type="text"
+            :disabled="ifRowDisabled"
+            @click="handleEditRow(scope.$index, scope.row)"
+          >
+            编辑
+          </el-button>
+          <el-button
+            type="text"
+            :disabled="ifRowDisabled"
+            @click="newsDelete(scope.$index, scope.row)"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
   </section>
 </template>
 
 <script>
+const modelRow = { title: "" };
 export default {
   name: "News",
+  data() {
+    return {
+      columns: [{ id: "title", label: "标题" }],
+      ifRowDisabled: false,
+    };
+  },
   async asyncData({ $http }) {
     const { data } = await $http.$get("/api/news/list");
     return { news: data };
@@ -26,31 +69,45 @@ export default {
       title: "News",
     };
   },
+  methods: {
+    handleEditRow(index, _row) {
+      this.$set(this.news[index], "contenteditable", true);
+    },
+    handleAddRow() {
+      if (this.ifRowDisabled) return;
+      this.ifRowDisabled = true;
+      this.news.push(modelRow);
+    },
+    newsPut(row, id, e) {
+      this.$http
+        .$put("/api/news/put", { ...row, [id]: e.srcElement.innerText })
+        .then((_res) => {});
+    },
+    newsDelete(_index, row) {
+      this.$http.$delete("/api/news/delete", { id: row.id }).then((_res) => {
+        this.news.splice(_index, 1);
+      });
+    },
+    newsAdd(_index, row) {
+      this.$http.$post("/api/news/add", row).then((_res) => {
+        // this.news.splice(_index, 1);
+      });
+    },
+  },
 };
 </script>
 
 <style scoped>
 .container {
-  margin: 0 auto;
-  min-height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
 }
-.title {
-  margin: 30px 0;
+.contenteditable {
+  border: 1px solid #ccc;
+  background: #ddd;
 }
-.news {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.news {
-  margin: 10px 0;
-}
-.button {
+.contenteditable-input {
+  padding: 3px 10px;
   display: inline-block;
-  margin-top: 50px;
+  width: -webkit-fill-available;
 }
 </style>

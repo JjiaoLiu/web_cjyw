@@ -76,11 +76,11 @@ export default {
 };
 </script>
 <style>
-[class^="nuxt-link"] {
+.el-menu [class^="nuxt-link"] {
   color: #fff;
   text-decoration: none;
 }
-.nuxt-link-exact-active {
+.el-menu .nuxt-link-exact-active {
   color: red;
 }
 </style>

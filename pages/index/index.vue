@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- emulate: true, -->
     <el-upload
       ref="upload"
       :data="fileData"
@@ -8,7 +7,6 @@
       :headers="{
         Authorization: token,
       }"
-      :on-remove="handleRemove"
       :file-list="fileList"
       :limit="1"
     >
@@ -17,6 +15,11 @@
         只能上传jpg/png文件，且不超过500kb
       </div>
     </el-upload>
+    <el-carousel trigger="click" height="150px" style="width: 220px">
+      <el-carousel-item v-for="item in pictures" :key="item">
+        <img :src="item" style="height: 100%" alt="" srcset="" />
+      </el-carousel-item>
+    </el-carousel>
   </div>
 </template>
 <script>
@@ -27,9 +30,20 @@ export default {
     return {
       fileList: [],
       fileData: {},
+      pictures: [],
       token: Cookie && Cookie.get("token"),
     };
   },
-  methods: {},
+  methods: {
+    getPicture() {
+      this.$http.$get("/api/picture").then((res) => {
+        this.pictures = res.data;
+        console.log(this.pictures);
+      });
+    },
+  },
+  mounted() {
+    this.getPicture();
+  },
 };
 </script>

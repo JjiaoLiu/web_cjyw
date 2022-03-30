@@ -56,6 +56,7 @@ export default {
         this.user
       );
       this.$store.commit("setAuth", token); // mutating to store for client rendering
+      this.$http.setToken(token);
       Cookie.set("token", token); // saving token in cookie for server rendering
       Cookie.set("username", data.name);
       this.$router.push("/");
