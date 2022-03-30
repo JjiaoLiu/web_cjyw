@@ -65,7 +65,7 @@ export default {
   data() {
     return {
       news: [],
-      form: { key: "测试" },
+      form: { key: "", limit: 3 },
       columns: [{ attr: "title", label: "标题" }],
     };
   },

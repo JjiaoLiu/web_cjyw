@@ -5,12 +5,18 @@ const router = Router();
 router.get("/news/list", function (req, res) {
   var dbo = global.mongodb.db("g1");
   var key = req.query.key;
+  var limit = Number(req.query.limit) || 10;
   var reg = new RegExp(key, "gi");
   dbo
     .collection("news")
-    .find({ title: { $regex: reg } })
+    .aggregate([
+      { $limit: limit },
+      { $match: { title: reg } },
+      { $group: { _id: null, total: { $sum: 1 } } },
+    ])
     .toArray()
     .then(function (data) {
+      console.log(data);
       if (data) {
         res.json({
           code: status.success,
