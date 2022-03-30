@@ -11,7 +11,8 @@ const express = require("express");
 // Create express instance
 const app = express();
 const multer = require("multer");
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const storage = multer.diskStorage({
   destination: function (_req, _file, cb) {
     cb(null, filePath); //fullpath
@@ -23,9 +24,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.use(upload.single("file"));
-app.use(express.urlencoded({ extended: false }));
-const bodyParser = require("body-parser");
-app.use(bodyParser.json());
 // JWT
 const expressJWT = require("express-jwt");
 const secretKey = "web_cjyw";

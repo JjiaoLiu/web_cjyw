@@ -1,11 +1,14 @@
 const { Router } = require("express");
+import { ObjectId } from "mongodb";
 import * as status from "./../statusCode";
 const router = Router();
-router.get("/news/list", function (_req, res) {
+router.get("/news/list", function (req, res) {
   var dbo = global.mongodb.db("g1");
+  var key = req.query.key;
+  var reg = new RegExp(key, "gi");
   dbo
     .collection("news")
-    .find({})
+    .find({ title: { $regex: reg } })
     .toArray()
     .then(function (data) {
       if (data) {
@@ -21,11 +24,11 @@ router.get("/news/list", function (_req, res) {
     });
 });
 router.put("/news/put", function (req, res) {
-  let id = req.body.id;
+  let _id = req.body._id;
   var dbo = global.mongodb.db("g1");
   dbo
     .collection("news")
-    .updateOne({ id: id }, { $set: { title: req.body.title } })
+    .updateOne({ _id: ObjectId(_id) }, { $set: { title: req.body.title } })
     .then(function () {
       res.json({
         code: status.success,
@@ -36,12 +39,12 @@ router.put("/news/put", function (req, res) {
       res.status(status.serverError);
     });
 });
-router.delete("/news/delete", function (req, res) {
-  let id = req.body.id;
+router.delete("/news/delete/:id", function (req, res) {
+  let _id = req.params.id;
   var dbo = global.mongodb.db("g1");
   dbo
     .collection("news")
-    .deleteOne({ id: id })
+    .deleteOne({ _id: new ObjectId(_id) })
     .then(function () {
       res.json({
         code: status.success,
@@ -53,14 +56,14 @@ router.delete("/news/delete", function (req, res) {
     });
 });
 router.post("/news/add", function (req, res) {
-  let obj = req.body;
   var dbo = global.mongodb.db("g1");
   dbo
     .collection("news")
-    .insertOne(obj)
-    .then(function () {
+    .insertOne({ title: req.body.title })
+    .then(function (data) {
       res.json({
         code: status.success,
+        data: data,
         message: "success",
       });
     })

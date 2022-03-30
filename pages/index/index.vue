@@ -38,7 +38,6 @@ export default {
     getPicture() {
       this.$http.$get("/api/picture").then((res) => {
         this.pictures = res.data;
-        console.log(this.pictures);
       });
     },
   },

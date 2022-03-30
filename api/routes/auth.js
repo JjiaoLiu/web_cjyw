@@ -14,7 +14,7 @@ router.post("/auth/login", function (req, res, next) {
         let token =
           "Bearer " +
           jwt.sign({ username: data.name }, secretKey, {
-            expiresIn: "1h",
+            expiresIn: "10h",
           });
         res.json({
           code: status.success,

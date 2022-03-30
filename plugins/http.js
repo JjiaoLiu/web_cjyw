@@ -12,9 +12,7 @@ export default function ({ $http, redirect, store }) {
       return Promise.reject(__response);
     }
   });
-  $http.onRetry(async (_request, _options, _errors, _retryCount) => {
-    _options.header.set("Authorization", `${store.state.auth}`);
-  });
+  $http.onRetry(async (_request, _options, _errors, _retryCount) => {});
   $http.onError((error) => {
     console.log("httpError", error);
     Message({ type: "error", message: error.message });
