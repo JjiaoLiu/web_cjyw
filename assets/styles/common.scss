@@ -1,3 +1,6 @@
+/* 改变 icon 字体路径变量，必需 */
+$--font-path: '~element-ui/lib/theme-chalk/fonts';
+@import "~element-ui/packages/theme-chalk/src/index";
 body {
   margin: 0;
   padding: 0;
@@ -12,11 +15,24 @@ a {
 .width_100 {
   width: 100%;
 }
-.full-page {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
+
 .container {
   color: black;
+}
+.el-table + .el-pagination {
+  margin-top: 10px;
+  text-align: right;
+}
+.contenteditable {
+  border: 1px solid #ccc;
+  background: #ddd;
+}
+.contenteditable-input {
+  padding: 3px 10px;
+  display: inline-block;
+  width: -webkit-fill-available;
+  min-height: 14px;
+}
+.is-error {
+  color: $--color-danger;
 }

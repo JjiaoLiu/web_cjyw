@@ -1,3 +1,5 @@
+import { resolve } from "path";
+
 export default {
   /*
    ** Nuxt target
@@ -42,6 +44,14 @@ export default {
     },
     {
       src: "~/plugins/http",
+      ssr: true,
+    },
+    {
+      src: "~/plugins/qs",
+      ssr: true,
+    },
+    {
+      src: "~/plugins/getError",
       ssr: true,
     },
   ],
@@ -95,4 +105,7 @@ export default {
    ** See https://nuxtjs.org/api/configuration-build/
    */
   build: {},
+  alias: {
+    "~": resolve(__dirname),
+  },
 };

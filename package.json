@@ -24,7 +24,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.4.0",
     "multer": "^1.4.4",
-    "nuxt": "latest"
+    "nuxt": "latest",
+    "validate": "^5.2.0"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^5.0.0",

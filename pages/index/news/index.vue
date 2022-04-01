@@ -9,7 +9,6 @@
         ></el-input>
       </el-form-item>
     </el-form>
-
     <el-table :data="news" border ref="table">
       <el-table-column
         v-for="col in columns"
@@ -26,8 +25,11 @@
             "
             :contenteditable="scope.row.contenteditable"
             v-html="scope.row[col.attr]"
-            @blur="(e) => newsSubmit(scope.row, col.attr, e)"
+            @blur="(e) => newsSubmit(scope.row, scope.$index, col.attr, e)"
           ></span>
+          <div class="is-error" v-if="errors[scope.$index]">
+            {{ $getError(col.attr, errors[scope.$index]) }}
+          </div>
         </template>
       </el-table-column>
       <el-table-column align="right">
@@ -42,30 +44,49 @@
           ></el-button>
         </template>
         <template slot-scope="scope">
-          <el-button
-            type="text"
+          <el-link
+            type="primary"
+            :underline="false"
             @click="handleEditRow(scope.$index, scope.row)"
+            >编辑</el-link
           >
-            编辑
-          </el-button>
-          <el-button type="text" @click="newsDelete(scope.$index, scope.row)">
-            删除
-          </el-button>
+          <el-divider direction="vertical"></el-divider>
+          <el-link
+            type="danger"
+            :underline="false"
+            @click="newsDelete(scope.$index, scope.row)"
+            >删除</el-link
+          >
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+      @size-change="sizeChange"
+      @current-change="currentChange"
+      :current-page.sync="currentPage"
+      :page-sizes="[10, 15, 20]"
+      :page-size="pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total"
+      background
+    >
+    </el-pagination>
   </section>
 </template>
 
 <script>
-import qs from "qs";
+import newsSchema from "~/schema/news";
 const modelRow = { _id: "", title: "", contenteditable: true };
 export default {
   name: "News",
   data() {
     return {
       news: [],
+      total: 0,
+      pageSize: 10,
+      currentPage: 1,
       form: { key: "", limit: 3 },
+      errors: [],
       columns: [{ attr: "title", label: "标题" }],
     };
   },
@@ -84,6 +105,13 @@ export default {
     },
   },
   methods: {
+    currentChange() {
+      this.newsList();
+    },
+    sizeChange() {
+      this.currentPage = 1;
+      this.newsList();
+    },
     handleEditRow(index, _row) {
       this.$set(this.news[index], "contenteditable", true);
     },
@@ -92,13 +120,22 @@ export default {
     },
     async newsList() {
       const { data } = await this.$http.$get(
-        "/api/news/list?" + qs.stringify(this.form)
+        "/api/news/list?" +
+          this.$qs.stringify({
+            ...this.form,
+            limit: this.pageSize,
+            page: this.currentPage,
+          })
       );
       this.news = data.data;
+      this.total = data.total;
     },
-    async newsSubmit(row, attr, e) {
+    async newsSubmit(row, index, attr, e) {
       row.contenteditable != undefined && delete row.contenteditable;
-      row[attr] = e.srcElement.innerText;
+      row[attr] = e.srcElement.innerText.trim();
+      var feed = newsSchema(row);
+      this.$set(this.errors, index, feed);
+      if (feed.length) return;
       if (row._id) {
         const { message } = await this.$http.$put("/api/news/put", row);
         this.$message.success(message);
@@ -110,26 +147,18 @@ export default {
     },
     async newsDelete(_index, row) {
       row.contenteditable != undefined && delete row.contenteditable;
-      let { message } = await this.$http.$delete(`/api/news/delete/${row._id}`);
-      this.news.splice(_index, 1);
-      this.$message.success(message);
+      if (row._id) {
+        let { message } = await this.$http.$delete(
+          `/api/news/delete/${row._id}`
+        );
+        this.news.splice(_index, 1);
+        this.$message.success(message);
+      } else {
+        this.news.splice(_index, 1);
+      }
     },
   },
 };
 </script>
 
-<style scoped>
-.container {
-  /* display: flex; */
-}
-.contenteditable {
-  border: 1px solid #ccc;
-  background: #ddd;
-}
-.contenteditable-input {
-  padding: 3px 10px;
-  display: inline-block;
-  width: -webkit-fill-available;
-  min-height: 14px;
-}
-</style>
+<style scoped></style>
