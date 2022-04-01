@@ -19,6 +19,7 @@ router.get("/news/list", async (req, res) => {
         { $match: { title: reg } },
         { $skip: skip },
         { $limit: limit },
+        { $project: { id: "$_id", _id: 0, title: 1 } },
       ])
       .toArray();
     res.json({
@@ -34,7 +35,7 @@ router.get("/news/list", async (req, res) => {
   }
 });
 router.put("/news/put", function (req, res) {
-  let _id = req.body._id;
+  let _id = req.body.id;
   var dbo = global.mongodb.db("g1");
   dbo
     .collection("news")

@@ -76,7 +76,7 @@
 
 <script>
 import newsSchema from "~/schema/news";
-const modelRow = { _id: "", title: "", contenteditable: true };
+const modelRow = { id: "", title: "", contenteditable: true };
 export default {
   name: "News",
   data() {
@@ -131,25 +131,25 @@ export default {
       this.total = data.total;
     },
     async newsSubmit(row, index, attr, e) {
-      row.contenteditable != undefined && delete row.contenteditable;
       row[attr] = e.srcElement.innerText.trim();
       var feed = newsSchema(row);
       this.$set(this.errors, index, feed);
       if (feed.length) return;
-      if (row._id) {
+      row.contenteditable != undefined && delete row.contenteditable;
+      if (row.id) {
         const { message } = await this.$http.$put("/api/news/put", row);
         this.$message.success(message);
       } else {
         const { message, data } = await this.$http.$post("/api/news/add", row);
-        row._id = data.insertedId;
+        row.id = data.insertedId;
         this.$message.success(message);
       }
     },
     async newsDelete(_index, row) {
       row.contenteditable != undefined && delete row.contenteditable;
-      if (row._id) {
+      if (row.id) {
         let { message } = await this.$http.$delete(
-          `/api/news/delete/${row._id}`
+          `/api/news/delete/${row.id}`
         );
         this.news.splice(_index, 1);
         this.$message.success(message);
