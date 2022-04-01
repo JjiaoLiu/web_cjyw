@@ -94,7 +94,7 @@ export default {
       const { data } = await this.$http.$get(
         "/api/news/list?" + qs.stringify(this.form)
       );
-      this.news = data;
+      this.news = data.data;
     },
     async newsSubmit(row, attr, e) {
       row.contenteditable != undefined && delete row.contenteditable;

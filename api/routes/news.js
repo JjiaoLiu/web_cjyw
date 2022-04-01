@@ -2,39 +2,46 @@ const { Router } = require("express");
 import { ObjectId } from "mongodb";
 import * as status from "./../statusCode";
 const router = Router();
-router.get("/news/list", function (req, res) {
+router.get("/news/list", async (req, res) => {
   var dbo = global.mongodb.db("g1");
   var key = req.query.key;
-  var limit = Number(req.query.limit) || 10;
+  var limit = Number(req.query.limit) || 2;
+  var page = Number(req.query.page) || 1;
+  var skip = limit * (page - 1);
   var reg = new RegExp(key, "gi");
-  dbo
-    .collection("news")
-    .aggregate([
-      { $limit: limit },
-      { $match: { title: reg } },
-      { $group: { _id: null, total: { $sum: 1 } } },
-    ])
-    .toArray()
-    .then(function (data) {
-      console.log(data);
-      if (data) {
-        res.json({
-          code: status.success,
-          data: data,
-          message: "success",
-        });
-      }
-    })
-    .catch(() => {
-      res.status(status.serverError);
+  var collection = dbo.collection("news");
+  try {
+    let count = await collection
+      .aggregate([{ $match: { title: reg } }, { $count: "total" }])
+      .toArray();
+    let data = await collection
+      .aggregate([
+        { $match: { title: reg } },
+        { $skip: skip },
+        { $limit: limit },
+      ])
+      .toArray();
+    res.json({
+      code: status.success,
+      data: {
+        total: count[0].total,
+        data: data,
+      },
+      message: "success",
     });
+  } catch {
+    res.status(status.serverError);
+  }
 });
 router.put("/news/put", function (req, res) {
   let _id = req.body._id;
   var dbo = global.mongodb.db("g1");
   dbo
     .collection("news")
-    .updateOne({ _id: ObjectId(_id) }, { $set: { title: req.body.title } })
+    .findOneAndUpdate(
+      { _id: ObjectId(_id) },
+      { $set: { title: req.body.title } }
+    )
     .then(function () {
       res.json({
         code: status.success,
