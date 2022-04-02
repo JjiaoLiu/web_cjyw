@@ -139,15 +139,14 @@ export default {
         row.contenteditable = true;
         return;
       }
-      console.log(row.id);
-      if (row.contenteditable) delete row.contenteditable;
-      console.log(row.id);
+      delete row.contenteditable;
       if (row.id) {
         const { message } = await this.$http.$put("/api/news/put", row);
         this.$message.success(message);
       } else {
         const { message, data } = await this.$http.$post("/api/news/add", row);
         row.id = data.insertedId;
+        this.total = this.total + 1;
         this.$message.success(message);
       }
     },
@@ -157,9 +156,11 @@ export default {
           `/api/news/delete/${row.id}`
         );
         this.news.splice(_index, 1);
+        this.total = this.total - 1;
         this.$message.success(message);
       } else {
         this.news.splice(_index, 1);
+        this.total = this.total - 1;
       }
     },
   },
