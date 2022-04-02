@@ -11,21 +11,18 @@ router.get("/news/list", async (req, res) => {
   var reg = new RegExp(key, "gi");
   var collection = dbo.collection("news");
   try {
-    let count = await collection
-      .aggregate([{ $match: { title: reg } }, { $count: "total" }])
-      .toArray();
-    let data = await collection
+    let allMatched = await collection
       .aggregate([
         { $match: { title: reg } },
-        { $skip: skip },
-        { $limit: limit },
         { $project: { id: "$_id", _id: 0, title: 1 } },
       ])
       .toArray();
+    let count = allMatched.length;
+    let data = allMatched.slice(skip, skip + limit);
     res.json({
       code: status.success,
       data: {
-        total: count[0].total,
+        total: count,
         data: data,
       },
       message: "success",
@@ -41,7 +38,7 @@ router.put("/news/put", function (req, res) {
     .collection("news")
     .findOneAndUpdate(
       { _id: ObjectId(_id) },
-      { $set: { title: req.body.title } }
+      { $set: { title: req.body.title } },
     )
     .then(function () {
       res.json({

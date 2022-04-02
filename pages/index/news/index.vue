@@ -9,7 +9,6 @@
         ></el-input>
       </el-form-item>
     </el-form>
-    {{ news }}
     <el-table :data="news" border ref="table">
       <el-table-column
         v-for="col in columns"
@@ -132,16 +131,17 @@ export default {
       this.total = data.total;
     },
     async newsSubmit(row, index, attr, e) {
+      console.log(attr);
       row[attr] = e.srcElement.innerText.trim();
-      var feed = newsSchema(row);
+      var feed = newsSchema(Object.assign({}, row));
       this.$set(this.errors, index, feed);
       if (feed.length > 0) {
         row.contenteditable = true;
         return;
       }
-      console.log("feed", feed);
-      console.log("row", row);
-      row.contenteditable != undefined && delete row.contenteditable;
+      console.log(row.id);
+      if (row.contenteditable) delete row.contenteditable;
+      console.log(row.id);
       if (row.id) {
         const { message } = await this.$http.$put("/api/news/put", row);
         this.$message.success(message);
