@@ -23,6 +23,9 @@
                   <el-menu-item>
                     <NuxtLink to="/news"> news page </NuxtLink>
                   </el-menu-item>
+                  <el-menu-item>
+                    <NuxtLink to="/tinymce"> tinymce </NuxtLink>
+                  </el-menu-item>
                 </el-menu-item-group>
               </el-submenu>
             </el-menu>

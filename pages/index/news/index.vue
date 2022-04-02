@@ -9,6 +9,7 @@
         ></el-input>
       </el-form-item>
     </el-form>
+    {{ news }}
     <el-table :data="news" border ref="table">
       <el-table-column
         v-for="col in columns"
@@ -75,8 +76,8 @@
 </template>
 
 <script>
-import newsSchema from "~/schema/news";
-const modelRow = { id: "", title: "", contenteditable: true };
+import newsSchema from "@/schema/news";
+const modelRow = { title: "", contenteditable: true };
 export default {
   name: "News",
   data() {
@@ -134,7 +135,12 @@ export default {
       row[attr] = e.srcElement.innerText.trim();
       var feed = newsSchema(row);
       this.$set(this.errors, index, feed);
-      if (feed.length) return;
+      if (feed.length > 0) {
+        row.contenteditable = true;
+        return;
+      }
+      console.log("feed", feed);
+      console.log("row", row);
       row.contenteditable != undefined && delete row.contenteditable;
       if (row.id) {
         const { message } = await this.$http.$put("/api/news/put", row);
@@ -146,7 +152,6 @@ export default {
       }
     },
     async newsDelete(_index, row) {
-      row.contenteditable != undefined && delete row.contenteditable;
       if (row.id) {
         let { message } = await this.$http.$delete(
           `/api/news/delete/${row.id}`
