@@ -8,6 +8,20 @@
           placeholder="keywords"
         ></el-input>
       </el-form-item>
+      <el-upload
+        ref="upload"
+        name="excel"
+        action="http://127.0.0.1:3000/api/uploadNewsExcel"
+        :headers="{
+          Authorization: $store.state.auth,
+        }"
+        :file-list="fileList"
+        :limit="1"
+      >
+        <el-button slot="trigger" size="small" type="primary"
+          >选取文件</el-button
+        >
+      </el-upload>
     </el-form>
     <el-table :data="news" border ref="table">
       <el-table-column
@@ -81,6 +95,7 @@ export default {
   name: "News",
   data() {
     return {
+      fileList: [],
       news: [],
       total: 0,
       pageSize: 10,

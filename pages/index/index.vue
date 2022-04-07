@@ -5,7 +5,7 @@
       :data="fileData"
       action="http://127.0.0.1:3000/api/upload"
       :headers="{
-        Authorization: token,
+        Authorization: $store.state.auth,
       }"
       :file-list="fileList"
       :limit="1"
@@ -31,7 +31,6 @@ export default {
       fileList: [],
       fileData: {},
       pictures: [],
-      token: Cookie && Cookie.get("token"),
     };
   },
   methods: {

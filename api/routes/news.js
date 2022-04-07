@@ -2,6 +2,7 @@ const { Router } = require("express");
 import { ObjectId } from "mongodb";
 import * as status from "./../statusCode";
 const router = Router();
+
 router.get("/news/list", async (req, res) => {
   var dbo = global.mongodb.db("g1");
   var key = req.query.key;
@@ -38,7 +39,7 @@ router.put("/news/put", function (req, res) {
     .collection("news")
     .findOneAndUpdate(
       { _id: ObjectId(_id) },
-      { $set: { title: req.body.title } },
+      { $set: { title: req.body.title } }
     )
     .then(function () {
       res.json({
@@ -81,5 +82,39 @@ router.post("/news/add", function (req, res) {
     .catch(() => {
       res.status(status.serverError);
     });
+});
+const formidable = require("formidable");
+var XLSX = require("xlsx");
+
+router.post("/uploadNewsExcel", function (req, res) {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  const form = new formidable.IncomingForm();
+  form.parse(req, (_err, _fields, files) => {
+    const f = Object.entries(files)[0][1];
+    const path = f.filepath;
+    const workbook = XLSX.readFile(path);
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    const jsa = XLSX.utils.sheet_to_json(worksheet);
+    console.log(jsa);
+    var dbo = global.mongodb.db("g1");
+    dbo
+      .collection("news")
+      .insertMany(jsa)
+      .then(function (data) {
+        res.json({
+          code: status.success,
+          data: data,
+          message: "success",
+        });
+      })
+      .catch(() => {
+        res.status(status.serverError);
+      });
+  });
+  res.json({
+    code: status.success,
+    message: "success",
+  });
 });
 module.exports = router;

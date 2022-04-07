@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
 // Connect mongodb
 var url = "mongodb://localhost:27017/";
-var filePath = "/Users/g1/workSpace/web_cjyw/uploads";
+export var filePath = "/Users/g1/workSpace/web_cjyw/static/uploads";
 async function connectMongoClient() {
   if (!global.mongodb) global.mongodb = await MongoClient.connect(url);
 }
@@ -10,20 +10,9 @@ connectMongoClient();
 const express = require("express");
 // Create express instance
 const app = express();
-const multer = require("multer");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const storage = multer.diskStorage({
-  destination: function (_req, _file, cb) {
-    cb(null, filePath); //fullpath
-  },
-  filename: function (_req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
 
-app.use(upload.single("file"));
 // JWT
 const expressJWT = require("express-jwt");
 const secretKey = "web_cjyw";
@@ -64,7 +53,6 @@ app.use(uploads);
 app.use((err, _req, res, _next) => {
   res.header("Access-Control-Allow-Origin", _req.headers.origin);
   if (err.name == "UnauthorizedError") {
-    console.log(err.name);
     res.status(401).json({ code: "401", message: err.name });
   }
   res.status(500).json({ code: "500", message: err.name });
