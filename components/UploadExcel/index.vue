@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import * as XLSX from 'xlsx'
+var XLSX = require("xlsx");
 
 export default {
   props: {

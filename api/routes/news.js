@@ -5,12 +5,12 @@ const router = Router();
 
 router.get("/news/list", async (req, res) => {
   var dbo = global.mongodb.db("g1");
+  var collection = dbo.collection("news");
   var key = req.query.key;
-  var limit = Number(req.query.limit) || 2;
+  var limit = Number(req.query.limit) || 10;
   var page = Number(req.query.page) || 1;
   var skip = limit * (page - 1);
   var reg = new RegExp(key, "gi");
-  var collection = dbo.collection("news");
   try {
     let allMatched = await collection
       .aggregate([
@@ -84,9 +84,7 @@ router.post("/news/add", function (req, res) {
     });
 });
 const formidable = require("formidable");
-var XLSX = require("xlsx");
-
-router.post("/uploadNewsExcel", function (req, res) {
+router.post("/news/import", function (req, res) {
   res.header("Access-Control-Allow-Origin", req.headers.origin);
   const form = new formidable.IncomingForm();
   form.parse(req, (_err, _fields, files) => {
@@ -96,7 +94,6 @@ router.post("/uploadNewsExcel", function (req, res) {
     const firstSheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[firstSheetName];
     const jsa = XLSX.utils.sheet_to_json(worksheet);
-    console.log(jsa);
     var dbo = global.mongodb.db("g1");
     dbo
       .collection("news")
@@ -116,5 +113,33 @@ router.post("/uploadNewsExcel", function (req, res) {
     code: status.success,
     message: "success",
   });
+});
+var XLSX = require("xlsx");
+router.get("/news/export", async (req, res) => {
+  // res.header("Access-Control-Allow-Origin", req.headers.origin);
+  var dbo = global.mongodb.db("g1");
+  var collection = dbo.collection("news");
+  var key = req.query.key;
+  var reg = new RegExp(key, "gi");
+  try {
+    let allMatched = await collection
+      .aggregate([
+        { $match: { title: reg } },
+        { $project: { id: "$_id", _id: 0, title: 1 } },
+      ])
+      .toArray();
+    res.setHeader("Content-Type", "application/octet-stream");
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.json_to_sheet(allMatched);
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    var wbout = XLSX.write(wb, {
+      bookType: "xlsx",
+      bookSST: true,
+      type: "buffer",
+    });
+    res.send(wbout);
+  } catch {
+    res.status(status.serverError);
+  }
 });
 module.exports = router;

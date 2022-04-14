@@ -1,6 +1,6 @@
 <template>
   <section class="container">
-    <el-form :model="form" ref="form">
+    <el-form :model="form" size="small" inline ref="form">
       <el-form-item>
         <el-input
           clearable
@@ -8,20 +8,24 @@
           placeholder="keywords"
         ></el-input>
       </el-form-item>
-      <el-upload
-        ref="upload"
-        name="excel"
-        action="http://127.0.0.1:3000/api/uploadNewsExcel"
-        :headers="{
-          Authorization: $store.state.auth,
-        }"
-        :file-list="fileList"
-        :limit="1"
-      >
-        <el-button slot="trigger" size="small" type="primary"
-          >选取文件</el-button
+      <el-form-item>
+        <el-upload
+          ref="upload"
+          name="excel"
+          action="http://127.0.0.1:3000/api/news/import"
+          :on-success="() => newsList()"
+          :headers="{
+            Authorization: $store.state.auth,
+          }"
+          :file-list="fileList"
+          :limit="1"
         >
-      </el-upload>
+          <el-button slot="trigger" type="primary">选取文件</el-button>
+        </el-upload>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="newsExport">导出</el-button>
+      </el-form-item>
     </el-form>
     <el-table :data="news" border ref="table">
       <el-table-column
@@ -89,6 +93,8 @@
 </template>
 
 <script>
+import { saveAs } from "file-saver";
+var XLSX = require("xlsx");
 import newsSchema from "@/schema/news";
 const modelRow = { title: "", contenteditable: true };
 export default {
@@ -102,7 +108,10 @@ export default {
       currentPage: 1,
       form: { key: "", limit: 3 },
       errors: [],
-      columns: [{ attr: "title", label: "标题" }],
+      columns: [
+        { attr: "id", label: "ID" },
+        { attr: "title", label: "标题" },
+      ],
     };
   },
   head() {
@@ -133,6 +142,11 @@ export default {
     handleAddRow() {
       this.news.push(Object.assign({}, modelRow));
     },
+    async newsExport() {
+      await this.$http.$get("/api/news/export", {
+        responseType: "arraybuffer",
+      });
+    },
     async newsList() {
       const { data } = await this.$http.$get(
         "/api/news/list?" +
@@ -146,7 +160,7 @@ export default {
       this.total = data.total;
     },
     async newsSubmit(row, index, attr, e) {
-      console.log(attr);
+      console.log(index);
       row[attr] = e.srcElement.innerText.trim();
       var feed = newsSchema(Object.assign({}, row));
       this.$set(this.errors, index, feed);
@@ -160,7 +174,7 @@ export default {
         this.$message.success(message);
       } else {
         const { message, data } = await this.$http.$post("/api/news/add", row);
-        row.id = data.insertedId;
+        this.$set(this.news[index], "id", data.insertedId);
         this.total = this.total + 1;
         this.$message.success(message);
       }
