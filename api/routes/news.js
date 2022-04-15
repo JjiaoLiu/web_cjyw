@@ -10,12 +10,18 @@ router.get("/news/list", async (req, res) => {
   var limit = Number(req.query.limit) || 10;
   var page = Number(req.query.page) || 1;
   var skip = limit * (page - 1);
-  var skip = limit * (page - 1);
+  var startTime = (req.query.date && +req.query.date[0]) || 0;
+  var endTime = (req.query.date && +req.query.date[1]) || Infinity;
   var reg = new RegExp(key, "gi");
   try {
     let allMatched = await collection
       .aggregate([
-        { $match: { title: reg } },
+        {
+          $match: {
+            title: reg,
+            updateTime: { $gte: startTime, $lte: endTime },
+          },
+        },
         {
           $project: {
             id: "$_id",

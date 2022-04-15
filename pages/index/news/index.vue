@@ -16,6 +16,7 @@
           start-placeholder="起始时间"
           end-placeholder="结束时间"
           value-format="timestamp"
+          :default-time="['00:00:00', '23:59:59']"
         >
         </el-date-picker>
       </el-form-item>
@@ -121,7 +122,7 @@
 
 <script>
 import newsSchema from "@/schema/news";
-const modelRow = { title: "", content: "", contenteditable: true };
+const modelRow = { contenteditable: true };
 export default {
   name: "News",
   data() {
@@ -131,7 +132,7 @@ export default {
       total: 0,
       pageSize: 10,
       currentPage: 1,
-      form: { key: "", limit: 3, data: [] },
+      form: { key: "", data: [] },
       errors: [],
       columns: [
         { attr: "id", label: "ID", writable: false },
@@ -142,7 +143,9 @@ export default {
           label: "更新时间",
           writable: false,
           formatter: (row) => {
-            return new Date(row["createTime"]).toLocaleString();
+            return row["updateTime"]
+              ? new Date(row["updateTime"]).toLocaleString()
+              : "";
           },
         },
       ],
