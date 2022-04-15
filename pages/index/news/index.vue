@@ -9,6 +9,17 @@
         ></el-input>
       </el-form-item>
       <el-form-item>
+        <el-date-picker
+          v-model="form.date"
+          type="daterange"
+          range-separator="-"
+          start-placeholder="起始时间"
+          end-placeholder="结束时间"
+          value-format="timestamp"
+        >
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item>
         <el-upload
           ref="upload"
           name="excel"
@@ -28,28 +39,40 @@
       </el-form-item>
     </el-form>
     <el-table :data="news" border ref="table">
-      <el-table-column
-        v-for="col in columns"
-        :key="col.attr"
-        :label="col.label"
-      >
-        <template slot-scope="scope">
-          <span
-            :id="'news_' + scope.$index"
-            :class="
-              'contenteditable-input' +
-              ' ' +
-              (scope.row.contenteditable && 'contenteditable')
-            "
-            :contenteditable="scope.row.contenteditable"
-            v-html="scope.row[col.attr]"
-            @blur="(e) => newsSubmit(scope.row, scope.$index, col.attr, e)"
-          ></span>
-          <div class="is-error" v-if="errors[scope.$index]">
-            {{ $getError(col.attr, errors[scope.$index]) }}
-          </div>
-        </template>
-      </el-table-column>
+      <template v-for="col in columns">
+        <el-table-column
+          v-if="col.formatter"
+          :label="col.label"
+          :key="col.attr"
+          :formatter="col.formatter"
+        >
+        </el-table-column>
+        <el-table-column v-else :label="col.label" :key="col.attr">
+          <template slot-scope="scope">
+            <span
+              :id="'news_' + scope.$index"
+              :class="
+                'contenteditable-input' +
+                ' ' +
+                (scope.row.contenteditable && col.writable !== false
+                  ? 'contenteditable'
+                  : '')
+              "
+              :contenteditable="
+                scope.row.contenteditable && col.writable !== false
+              "
+              v-html="scope.row[col.attr]"
+              @blur="
+                (e) => newsLocalChange(scope.row, scope.$index, col.attr, e)
+              "
+            ></span>
+            <div class="is-error" v-if="errors[scope.$index]">
+              {{ $getError(col.attr, errors[scope.$index]) }}
+            </div>
+          </template>
+        </el-table-column>
+      </template>
+
       <el-table-column align="right">
         <template slot="header">
           操作
@@ -62,12 +85,16 @@
           ></el-button>
         </template>
         <template slot-scope="scope">
-          <el-link
-            type="primary"
-            :underline="false"
-            @click="handleEditRow(scope.$index, scope.row)"
-            >编辑</el-link
-          >
+          <el-link type="primary" :underline="false">
+            <span
+              v-if="scope.row.contenteditable"
+              @click="newsSubmit(scope.row, scope.$index)"
+              >保存</span
+            >
+            <span v-else @click="handleEditRow(scope.$index, scope.row)">
+              编辑
+            </span>
+          </el-link>
           <el-divider direction="vertical"></el-divider>
           <el-link
             type="danger"
@@ -93,10 +120,8 @@
 </template>
 
 <script>
-import { saveAs } from "file-saver";
-var XLSX = require("xlsx");
 import newsSchema from "@/schema/news";
-const modelRow = { title: "", contenteditable: true };
+const modelRow = { title: "", content: "", contenteditable: true };
 export default {
   name: "News",
   data() {
@@ -106,11 +131,20 @@ export default {
       total: 0,
       pageSize: 10,
       currentPage: 1,
-      form: { key: "", limit: 3 },
+      form: { key: "", limit: 3, data: [] },
       errors: [],
       columns: [
-        { attr: "id", label: "ID" },
+        { attr: "id", label: "ID", writable: false },
         { attr: "title", label: "标题" },
+        { attr: "content", label: "正文" },
+        {
+          attr: "updateTime",
+          label: "更新时间",
+          writable: false,
+          formatter: (row) => {
+            return new Date(row["createTime"]).toLocaleString();
+          },
+        },
       ],
     };
   },
@@ -142,6 +176,15 @@ export default {
     handleAddRow() {
       this.news.push(Object.assign({}, modelRow));
     },
+    newsLocalChange(row, index, attr, e) {
+      row[attr] = e.srcElement.innerText.trim();
+      var feed = newsSchema(Object.assign({}, row));
+      this.$set(this.errors, index, feed);
+      if (feed.length > 0) {
+        row.contenteditable = true;
+        return;
+      }
+    },
     async newsExport() {
       await this.$http.$get("/api/news/export", {
         responseType: "arraybuffer",
@@ -159,38 +202,25 @@ export default {
       this.news = data.data;
       this.total = data.total;
     },
-    async newsSubmit(row, index, attr, e) {
-      console.log(index);
-      row[attr] = e.srcElement.innerText.trim();
-      var feed = newsSchema(Object.assign({}, row));
-      this.$set(this.errors, index, feed);
-      if (feed.length > 0) {
-        row.contenteditable = true;
-        return;
-      }
-      delete row.contenteditable;
+    async newsSubmit(row, index) {
+      this.$delete(this.news[index], "contenteditable");
+      let response;
       if (row.id) {
-        const { message } = await this.$http.$put("/api/news/put", row);
-        this.$message.success(message);
+        response = await this.$http.$put("/api/news/put", row);
       } else {
-        const { message, data } = await this.$http.$post("/api/news/add", row);
-        this.$set(this.news[index], "id", data.insertedId);
-        this.total = this.total + 1;
-        this.$message.success(message);
+        response = await this.$http.$post("/api/news/add", row);
       }
+      this.$message.success(response.message);
+      this.newsList();
     },
     async newsDelete(_index, row) {
+      let response;
       if (row.id) {
-        let { message } = await this.$http.$delete(
-          `/api/news/delete/${row.id}`
-        );
-        this.news.splice(_index, 1);
-        this.total = this.total - 1;
-        this.$message.success(message);
-      } else {
-        this.news.splice(_index, 1);
-        this.total = this.total - 1;
+        response = await this.$http.$delete(`/api/news/delete/${row.id}`);
       }
+      this.news.splice(_index, 1);
+      this.total = this.total - 1;
+      this.$message.success(response.message);
     },
   },
 };

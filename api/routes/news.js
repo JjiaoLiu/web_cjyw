@@ -10,14 +10,25 @@ router.get("/news/list", async (req, res) => {
   var limit = Number(req.query.limit) || 10;
   var page = Number(req.query.page) || 1;
   var skip = limit * (page - 1);
+  var skip = limit * (page - 1);
   var reg = new RegExp(key, "gi");
   try {
     let allMatched = await collection
       .aggregate([
         { $match: { title: reg } },
-        { $project: { id: "$_id", _id: 0, title: 1 } },
+        {
+          $project: {
+            id: "$_id",
+            _id: 0,
+            title: 1,
+            content: 1,
+            createTime: 1,
+            updateTime: 1,
+          },
+        },
       ])
       .toArray();
+
     let count = allMatched.length;
     let data = allMatched.slice(skip, skip + limit);
     res.json({
@@ -34,12 +45,18 @@ router.get("/news/list", async (req, res) => {
 });
 router.put("/news/put", function (req, res) {
   let _id = req.body.id;
-  var dbo = global.mongodb.db("g1");
+  let dbo = global.mongodb.db("g1");
+  let handler = {
+    ...req.body,
+    updateTime: new Date().getTime(),
+  };
   dbo
     .collection("news")
     .findOneAndUpdate(
       { _id: ObjectId(_id) },
-      { $set: { title: req.body.title } }
+      {
+        $set: handler,
+      }
     )
     .then(function () {
       res.json({
@@ -69,9 +86,14 @@ router.delete("/news/delete/:id", function (req, res) {
 });
 router.post("/news/add", function (req, res) {
   var dbo = global.mongodb.db("g1");
+  let handler = {
+    ...req.body,
+    createTime: new Date().getTime(),
+    updateTime: new Date().getTime(),
+  };
   dbo
     .collection("news")
-    .insertOne({ title: req.body.title })
+    .insertOne(handler)
     .then(function (data) {
       res.json({
         code: status.success,
@@ -116,7 +138,6 @@ router.post("/news/import", function (req, res) {
 });
 var XLSX = require("xlsx");
 router.get("/news/export", async (req, res) => {
-  // res.header("Access-Control-Allow-Origin", req.headers.origin);
   var dbo = global.mongodb.db("g1");
   var collection = dbo.collection("news");
   var key = req.query.key;
@@ -124,8 +145,20 @@ router.get("/news/export", async (req, res) => {
   try {
     let allMatched = await collection
       .aggregate([
+        {
+          $addFields: {
+            convertedId: {
+              $convert: {
+                input: "$_id",
+                to: "string",
+                onError: "null",
+                onNull: "null",
+              },
+            },
+          },
+        },
         { $match: { title: reg } },
-        { $project: { id: "$_id", _id: 0, title: 1 } },
+        { $project: { id: "$convertedId", _id: 0, title: 1, content: 1 } },
       ])
       .toArray();
     res.setHeader("Content-Type", "application/octet-stream");
