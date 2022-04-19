@@ -16,6 +16,7 @@
         :show-file-list="true"
         :on-remove="handleRemove"
         :on-success="handleSuccess"
+        accept=".jpeg,.jpg,.png"
         :before-upload="beforeUpload"
         class="editor-slide-upload"
         action="http://127.0.0.1:3000/api/upload"
@@ -68,6 +69,7 @@ export default {
       this.dialogVisible = false;
     },
     handleSuccess(response, file) {
+      console.log(response.data);
       const uid = file.uid;
       const objKeyArr = Object.keys(this.listObj);
       for (let i = 0, len = objKeyArr.length; i < len; i++) {
