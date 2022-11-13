@@ -22,6 +22,7 @@ app.use(
   })
 );
 app.use("*", function (req, res, next) {
+  console.log(1);
   if (req.method.toLowerCase() == "options") {
     res.header("Access-Control-Allow-Origin", req.headers.origin);
     res.header(

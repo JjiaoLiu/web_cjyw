@@ -46,4 +46,31 @@ yarn install # or npm install
 - [NuxtJS license](https://github.com/nuxt/nuxt.js/blob/master/LICENSE.md)
 - [VueJS license](https://github.com/vuejs/vue/blob/master/LICENSE)
 
+## mongodb Mac OSX 平台安装
 
+- [Mac OSX 平台安装 MongoDB | 菜鸟教程](https://www.runoob.com/mongodb/mongodb-osx-install.html)
+
+## 查看mongodb是否启动
+
+- ``ps aux | grep -v grep | grep mongod``
+
+## 启动mongobd 
+
+- ``cd usr/local/mongodb/bin``
+- ``mongod --dbpath /usr/local/var/mongodb --logpath /usr/local/var/log/mongodb/mongo.log --fork``
+
+## jsonwebtoken 设置权限中间件
+
+- ``https://www.npmjs.com/package/jsonwebtoken``
+
+## multer 上传图片中间件
+
+- ``https://www.npmjs.com/package/multer``
+
+## formidable 解析excel中间件
+
+- ``https://www.npmjs.com/package/formidable``
+
+## xlsx 导出数据为xlsx
+
+-``https://www.npmjs.com/package/xlsx``
